@@ -4,7 +4,7 @@ resource "aws_s3_bucket" "remediation_demo_bucket" {
   tags = {
     "dd_git_file"           = "terraform/main.tf"
     "dd_git_org"            = "DataDog"
-    "dd_git_repo"           = "github.com/DataDog/shopist-infra-iac-demo"
+    "dd_git_repo"           = "github.com/DataDog/shopist-code-security-demo"
     "dd_git_resource_lines" = "1:9"
   }
 }
