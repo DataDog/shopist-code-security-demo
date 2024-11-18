@@ -20,3 +20,17 @@ resource "aws_s3_bucket_versioning" "versioning_remediation_demo_bucket" {
     status = "Disabled"
   }
 }
+
+data "aws_availability_zones" "available_iac" {
+  state = "available"
+}
+
+resource "aws_ebs_volume" "iac_volume" {
+  availability_zone = data.aws_availability_zones.available_iac.names[0]
+  size              = 1
+
+  tags = {
+    Name = "iac-scanning"
+    Team = "demo"
+  }
+}
