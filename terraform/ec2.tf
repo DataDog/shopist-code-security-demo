@@ -27,7 +27,7 @@ EOF
   tags = {
     dd_git_file               = "terraform/ec2.tf"
     dd_git_org                = "DataDog"
-    dd_git_repo               = "shopist-infra-iac-demo"
+    dd_git_repo               = "shopist-code-security-demo"
     dd_git_resource_signature = "resource.aws_launch_template.nginx-instance"
   }
 }

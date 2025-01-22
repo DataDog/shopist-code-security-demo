@@ -5,7 +5,7 @@ resource "aws_iam_role" "iac-remediation" {
   tags = {
     dd_git_file               = "terraform/roles.tf"
     dd_git_org                = "DataDog"
-    dd_git_repo               = "shopist-infra-iac-demo"
+    dd_git_repo               = "shopist-code-security-demo"
     dd_git_resource_signature = "resource.aws_iam_role.iac-remediation"
   }
 }
