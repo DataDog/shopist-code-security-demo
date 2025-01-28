@@ -7,13 +7,6 @@ resource "aws_launch_template" "nginx-instance" {
     name = aws_iam_instance_profile.nginx-instance-profile.name
   }
 
-  block_device_mappings {
-    device_name = "/dev/sdf"
-    ebs {
-      volume_size = 20
-    }
-  }
-
   user_data = base64encode(<<EOF
 #!/bin/bash
 touch /tmp/user-data
@@ -29,6 +22,13 @@ EOF
     dd_git_org                = "DataDog"
     dd_git_repo               = "shopist-code-security-demo"
     dd_git_resource_signature = "resource.aws_launch_template.nginx-instance"
+  }
+
+  block_device_mappings {
+    device_name = "/dev/sdf"
+    ebs {
+      volume_size = 20
+    }
   }
 }
 
