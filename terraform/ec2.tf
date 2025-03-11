@@ -30,5 +30,9 @@ EOF
       volume_size = 20
     }
   }
+  metadata_options {
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+  }
 }
 
