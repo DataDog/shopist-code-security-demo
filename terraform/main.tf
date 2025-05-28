@@ -20,3 +20,8 @@ resource "aws_s3_bucket_versioning" "versioning_remediation_demo_bucket" {
     status = "Disabled"
   }
 }
+
+resource "aws_s3_bucket_acl" "remediation_demo_bucket_2" {
+  bucket = aws_s3_bucket.remediation_demo_bucket_2.id
+  acl    = "private"
+}
