@@ -1,0 +1,43 @@
+schema-version: v1
+rulesets:
+  - python-best-practices
+  - python-code-style
+  - python-design
+  - python-inclusive
+  - python-security
+  - python-django
+  - python-flask
+  - python-pandas
+  - javascript-best-practices
+  - javascript-code-style
+  - javascript-inclusive
+  - javascript-common-security
+  - javascript-node-security
+  - javascript-express
+  - javascript-aws
+  - javascript-browser-security
+  - jsx-react
+  - typescript-best-practices
+  - typescript-code-style
+  - typescript-inclusive
+  - typescript-common-security
+  - typescript-node-security
+  - typescript-express
+  - typescript-aws
+  - typescript-browser-security
+  - tsx-react
+  - java-best-practices
+  - java-code-style
+  - java-inclusive
+  - java-security
+  - csharp-best-practices
+  - csharp-code-style
+  - csharp-inclusive
+  - csharp-security
+  - docker-best-practices
+  - go-best-practices
+  - go-inclusive
+  - go-security
+  - ruby-best-practices
+  - ruby-security
+ignorePaths: []
