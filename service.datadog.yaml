@@ -1,0 +1,16 @@
+apiVersion: v3
+kind: service
+metadata:
+  name: shopist-code-security-demo
+  displayName: Shopist Code Security Demo
+  tags:
+    - env:demo
+    - team:security
+spec:
+  lifecycle: development
+  tier: Tier 3
+datadog:
+  codeLocations:
+    - repositoryURL: https://github.com/datadog/shopist-code-security-demo.git
+      paths:
+        - "app/**"
