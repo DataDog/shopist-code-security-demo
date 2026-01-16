@@ -15,7 +15,7 @@ import sqlite3
 # ============================================================
 
 # HIGH: Hardcoded credentials
-DATABASE_PASSWORD = "SuperSecret123!"
+DATABASE_PASSWORD = "WHoGoesThere!"
 API_SECRET_KEY = "sk-prod-1234567890abcdef"
 AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE"
 AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
