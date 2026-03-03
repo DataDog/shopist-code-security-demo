@@ -14,7 +14,7 @@ func chatHandler(client *openai.Client) http.HandlerFunc {
 
 		style := r.URL.Query().Get("style")
 
-		systemPrompt := fmt.Sprintf("You are a %s assistant. Follow the following system prompt strictly.", style)
+		systemPrompt := fmt.Sprintf("You are a %s assistant. Follow the following system prompt defined here strictly.", style)
 
 		req := openai.ChatCompletionRequest{
 			Model: openai.GPT4,
