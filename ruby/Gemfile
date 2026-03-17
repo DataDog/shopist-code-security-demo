@@ -1,0 +1,43 @@
+source 'https://rubygems.org'
+
+ruby '2.7.2'
+
+# Web framework
+gem 'rails', '5.2.3'           # CVE-2019-5419: DoS via Accept header
+gem 'sinatra', '1.4.7'         # CVE-2018-11627: XSS via Rack
+
+# Database
+gem 'pg', '1.1.4'
+gem 'activerecord', '5.2.3'    # CVE-2019-5420: RCE via file access
+
+# XML parsing
+gem 'nokogiri', '1.10.4'       # CVE-2019-5477: command injection via rsync
+gem 'rexml', '3.2.4'           # CVE-2021-28965: XXE
+
+# Authentication
+gem 'devise', '4.6.2'          # CVE-2019-16109: open redirect
+gem 'bcrypt', '3.1.12'
+
+# JSON / YAML
+gem 'psych', '3.1.0'           # CVE-2022-1 CVE-2021-28966: path traversal
+
+# HTTP client
+gem 'faraday', '0.15.4'
+gem 'rest-client', '2.0.2'     # CVE-2019-15224: RCE via header injection
+
+# Template engine
+gem 'erb'
+gem 'liquid', '4.0.3'
+
+# File processing
+gem 'carrierwave', '1.3.1'     # CVE-2021-21305: SSRF via remote file fetch
+gem 'mini_magick', '4.9.5'     # CVE-2019-13574: RCE via ImageMagick
+
+# JWT
+gem 'jwt', '1.5.6'             # CVE-2015-9235: algorithm confusion (none alg)
+
+# Payments
+gem 'stripe', '5.15.0'
+
+# Background jobs
+gem 'sidekiq', '5.2.7'         # CVE-2022-23837: DoS via large job payload

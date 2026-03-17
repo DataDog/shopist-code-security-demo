@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>Shopist</AssemblyName>
+    <RootNamespace>Shopist</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Web framework -->
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
+    <!-- CVE-2021-34532: info disclosure via JWT bearer token logging -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.0" />
+
+    <!-- JSON serialization -->
+    <!-- CVE-2024-21907: DoS via deeply nested JSON -->
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+
+    <!-- XML -->
+    <!-- CVE-2021-26701: remote code execution -->
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.0" />
+
+    <!-- Cryptography -->
+    <!-- CVE-2022-34716: info disclosure -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="4.5.0" />
+
+    <!-- ORM -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.0" />
+
+    <!-- Image processing -->
+    <!-- CVE-2021-31826: buffer overflow -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.1" />
+
+    <!-- Logging -->
+    <PackageReference Include="NLog" Version="4.5.11" />
+
+    <!-- HTML sanitization -->
+    <!-- CVE-2021-32842: XSS bypass -->
+    <PackageReference Include="HtmlSanitizer" Version="5.0.372" />
+
+    <!-- Payments -->
+    <PackageReference Include="Stripe.net" Version="39.0.0" />
+
+    <!-- YAML -->
+    <!-- CVE-2022-25878: RCE via deserialization -->
+    <PackageReference Include="YamlDotNet" Version="8.1.2" />
+
+    <!-- JWT -->
+    <!-- CVE-2022-23539: weak algorithm acceptance -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.6.0" />
+  </ItemGroup>
+
+</Project>
