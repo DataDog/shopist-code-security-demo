@@ -1,0 +1,92 @@
+# Shopist Kubernetes pod security configuration
+# WARNING: intentionally misconfigured for Datadog IaC Security demo
+
+# VULN 1: PodSecurityPolicy (deprecated but still detectable) allows privileged containers
+# and root execution with no restrictions on volume types
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: shopist-permissive-psp
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfiles: '*'  # VULN 1a: All seccomp profiles allowed
+spec:
+  privileged: true                # VULN 1b: Privileged containers allowed
+  allowPrivilegeEscalation: true  # VULN 1c: Privilege escalation allowed
+  runAsUser:
+    rule: RunAsAny                # VULN 1d: Any UID including root (0) allowed
+  seLinux:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+    - '*'                         # VULN 1e: All volume types including hostPath allowed
+  hostNetwork: true               # VULN 1f: Host network access allowed
+  hostPID: true                   # VULN 1g: Host PID namespace access allowed
+  hostIPC: true                   # VULN 1h: Host IPC namespace access allowed
+
+---
+# VULN 2: ConfigMap stores sensitive credentials (should be a Secret)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shopist-app-config
+  namespace: shopist
+data:
+  DATABASE_URL: "postgresql://shopist_admin:Sup3rS3cr3tP@ssw0rd!@prod-db:5432/shopist"  # VULN 2a: DB password in ConfigMap
+  REDIS_PASSWORD: "R3d1sP@ssw0rd123"                                                       # VULN 2b: Redis password in ConfigMap
+  API_ENCRYPTION_KEY: "shopist-static-encryption-key-32bytes!!"                            # VULN 2c: Encryption key in ConfigMap
+
+---
+# VULN 3: Secret stored as base64 only (no encryption at rest enforced by manifest)
+# Kubernetes Secrets are only base64-encoded, not encrypted, unless the cluster
+# has EncryptionConfiguration enabled. This secret is committed to source control.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: shopist-db-credentials
+  namespace: shopist
+type: Opaque
+data:
+  # VULN 3: Secrets in source-controlled manifests — decoded value: shopist_admin / Sup3rS3cr3tP@ssw0rd!
+  username: c2hvcGlzdF9hZG1pbg==
+  password: U3VwM3JTM2NyM3RQQHNzdzByZCE=
+
+---
+# VULN 4: Pod with hostPath volume mount — can read/write host filesystem
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shopist-debug-pod
+  namespace: shopist
+spec:
+  containers:
+    - name: debug
+      image: busybox:latest
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: host-root
+          mountPath: /host  # VULN 4: Container can access entire host filesystem at /host
+  volumes:
+    - name: host-root
+      hostPath:
+        path: /             # VULN 4: Mounts root of host filesystem
+
+---
+# VULN 5: Container with dangerous Linux capabilities
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shopist-report-generator
+  namespace: shopist
+spec:
+  containers:
+    - name: report-generator
+      image: shopist/reports:latest
+      securityContext:
+        capabilities:
+          add:
+            - SYS_PTRACE   # VULN 5a: Can trace/attach to any process
+            - SYS_ADMIN    # VULN 5b: Broad system administration capability
+            - NET_RAW      # VULN 5c: Raw socket access (can craft arbitrary packets)

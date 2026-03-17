@@ -1,0 +1,121 @@
+# Shopist Kubernetes Deployments
+# WARNING: intentionally misconfigured for Datadog IaC Security demo
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopist-api
+  namespace: shopist
+  labels:
+    app: shopist-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shopist-api
+  template:
+    metadata:
+      labels:
+        app: shopist-api
+    spec:
+      # VULN 1: automountServiceAccountToken not disabled — default SA token mounted unnecessarily
+      containers:
+        - name: shopist-api
+          image: shopist/api:latest
+
+          # VULN 2: No resource limits — container can consume all node CPU/memory
+          # resources:
+          #   limits:
+          #     cpu: "500m"
+          #     memory: "512Mi"
+
+          securityContext:
+            # VULN 3: Container runs as root (runAsNonRoot not set, runAsUser: 0)
+            runAsUser: 0
+            # VULN 4: Privileged mode enabled — full host kernel access
+            privileged: true
+            # VULN 5: Writable root filesystem — attacker can modify container files
+            readOnlyRootFilesystem: false
+            # VULN 6: All Linux capabilities retained (no drop: ["ALL"])
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_ADMIN
+
+          env:
+            # VULN 7: Secrets passed as plain environment variables (not from Secret refs)
+            - name: DB_PASSWORD
+              value: "Sup3rS3cr3tP@ssw0rd!"
+            - name: STRIPE_SECRET_KEY
+              value: "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+            - name: JWT_SECRET
+              value: "shopist_jwt_secret_do_not_share"
+
+          ports:
+            - containerPort: 8080
+
+          # VULN 8: No liveness/readiness probes — unhealthy containers won't be restarted
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopist-worker
+  namespace: shopist
+  labels:
+    app: shopist-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shopist-worker
+  template:
+    metadata:
+      labels:
+        app: shopist-worker
+    spec:
+      # VULN 9: hostNetwork: true — container shares host network namespace
+      hostNetwork: true
+      # VULN 10: hostPID: true — container can see and signal all host processes
+      hostPID: true
+
+      containers:
+        - name: shopist-worker
+          image: shopist/worker:latest
+
+          securityContext:
+            # VULN 11: allowPrivilegeEscalation not explicitly disabled
+            allowPrivilegeEscalation: true
+
+          # VULN 12: No resource requests or limits set
+          resources: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopist-frontend
+  namespace: shopist
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shopist-frontend
+  template:
+    metadata:
+      labels:
+        app: shopist-frontend
+    spec:
+      containers:
+        - name: shopist-frontend
+          image: shopist/frontend:latest
+
+          securityContext:
+            # VULN 13: runAsNonRoot not enforced — may run as root if image default is root
+            runAsNonRoot: false
+
+          # VULN 14: Image tag is "latest" — no pinned digest, non-deterministic deployments
+          # (image: shopist/frontend:latest above)
+
+          ports:
+            - containerPort: 3000

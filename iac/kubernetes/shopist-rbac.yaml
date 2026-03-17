@@ -1,0 +1,91 @@
+# Shopist Kubernetes RBAC configuration
+# WARNING: intentionally misconfigured for Datadog IaC Security demo
+
+# VULN 1: ClusterRoleBinding grants cluster-admin to a regular service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: shopist-api-admin-binding
+subjects:
+  - kind: ServiceAccount
+    name: shopist-api
+    namespace: shopist
+roleRef:
+  kind: ClusterRole
+  apiRef: cluster-admin  # VULN 1: Full cluster-admin access for an application service account
+
+---
+# VULN 2: ClusterRole allows wildcard verbs on all resources in all API groups
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shopist-worker-role
+rules:
+  - apiGroups: ["*"]      # VULN 2a: All API groups
+    resources: ["*"]      # VULN 2b: All resource types
+    verbs: ["*"]          # VULN 2c: All verbs (get, list, create, delete, patch, etc.)
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: shopist-worker-admin-binding
+subjects:
+  - kind: ServiceAccount
+    name: shopist-worker
+    namespace: shopist
+roleRef:
+  kind: ClusterRole
+  name: shopist-worker-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# VULN 3: Role allows reading secrets across the entire namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: shopist-secrets-reader
+  namespace: shopist
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]  # VULN 3: Can read all secrets in the namespace
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: shopist-secrets-reader-binding
+  namespace: shopist
+subjects:
+  - kind: ServiceAccount
+    name: shopist-frontend
+    namespace: shopist
+roleRef:
+  kind: Role
+  name: shopist-secrets-reader
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# VULN 4: Default service account has automount enabled (no explicit opt-out)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shopist-api
+  namespace: shopist
+# automountServiceAccountToken: false  # VULN 4: Not set — token is auto-mounted by default
+
+---
+# VULN 5: Role allows exec into pods — attacker with this role can get shell access
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: shopist-deploy-role
+  namespace: shopist
+rules:
+  - apiGroups: [""]
+    resources: ["pods/exec", "pods/attach"]  # VULN 5: Allows shell exec into any pod
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete", "create", "patch"]
