@@ -1,0 +1,29 @@
+{
+  "name": "shopist-typescript",
+  "version": "1.0.0",
+  "description": "Shopist e-commerce backend (TypeScript)",
+  "main": "dist/index.js",
+  "dependencies": {
+    "express": "4.17.1",
+    "axios": "0.19.0",
+    "lodash": "4.17.15",
+    "moment": "2.29.1",
+    "jsonwebtoken": "8.5.1",
+    "ejs": "3.1.6",
+    "minimist": "1.2.5",
+    "pg": "8.5.1",
+    "nodemailer": "6.4.16",
+    "js-yaml": "3.13.1",
+    "xml2js": "0.4.22",
+    "handlebars": "4.5.3",
+    "pug": "3.0.2",
+    "ldapjs": "1.0.2",
+    "node-serialize": "0.0.4"
+  },
+  "devDependencies": {
+    "typescript": "4.2.4",
+    "@types/express": "4.17.11",
+    "@types/node": "14.14.37",
+    "ts-node": "9.1.1"
+  }
+}
