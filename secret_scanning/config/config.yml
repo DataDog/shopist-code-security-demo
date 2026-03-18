@@ -1,0 +1,47 @@
+# Shopist application configuration
+# WARNING: intentionally contains hardcoded secrets for Secret Scanning demo
+
+database:
+  host: prod-db.shopist.internal
+  port: 5432
+  name: shopist
+  username: shopist_admin
+  password: "Sup3rS3cr3tDbP@ss!"
+
+redis:
+  host: redis.shopist.internal
+  port: 6379
+  password: "R3d1sS3cr3tP@ss"
+
+stripe:
+  secret_key: "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+  webhook_secret: "whsec_8f3kLmNpQrStUvWxYzAbCdEfGhIj"
+
+aws:
+  access_key_id: "AKIAIOSFODNN7EXAMPLE"
+  secret_access_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  region: "us-east-1"
+  s3_bucket: "shopist-uploads"
+
+sendgrid:
+  api_key: "SG.aBcDeFgHiJkLmNoPqRsTuV.WxYz1234567890abcdefghijklmnopqrstuvwxyz12345"
+
+twilio:
+  account_sid: "ACa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+  auth_token: "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6"
+  phone_number: "+15551234567"
+
+jwt:
+  secret: "shopist_jwt_secret_key_2024_do_not_share"
+  expiry: 3600
+
+github:
+  token: "ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456789"
+
+slack:
+  bot_token: "xoxb-1234567890-1234567890123-aBcDeFgHiJkLmNoPqRsTuVwX"
+  webhook_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+
+datadog:
+  api_key: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+  app_key: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"

@@ -1,0 +1,46 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
+    id 'org.springframework.boot' version '2.3.4.RELEASE'
+}
+
+group = 'com.shopist'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Web framework
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.3.4.RELEASE' // CVE-2022-22965: Spring4Shell
+
+    // Logging - Log4Shell
+    implementation 'org.apache.logging.log4j:log4j-core:2.14.1' // CVE-2021-44228: Log4Shell JNDI RCE
+
+    // JSON serialization
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.10' // CVE-2019-17267: polymorphic deserialization RCE
+
+    // Apache Commons
+    implementation 'commons-collections:commons-collections:3.1' // CVE-2015-4852: deserialization RCE
+
+    // Database
+    implementation 'org.postgresql:postgresql:42.2.5' // CVE-2022-21724: arbitrary file read
+
+    // YAML
+    implementation 'org.yaml:snakeyaml:1.27' // CVE-2022-25857: DoS via billion laughs
+
+    // JWT
+    implementation 'com.auth0:java-jwt:3.8.1' // CVE-2020-7957: algorithm confusion
+
+    // XML
+    implementation 'xerces:xercesImpl:2.11.0' // CVE-2012-0881: XXE
+
+    // Template engine
+    implementation 'org.freemarker:freemarker:2.3.28' // CVE-2019-17571: SSTI
+
+    // Kotlin
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

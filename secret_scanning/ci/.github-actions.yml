@@ -1,0 +1,37 @@
+# Shopist CI/CD GitHub Actions workflow
+# WARNING: intentionally contains hardcoded secrets for Secret Scanning demo
+
+name: Deploy Shopist
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Hardcoded secrets (should use GitHub Secrets instead)
+      STRIPE_SECRET_KEY: "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+      AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      SENDGRID_API_KEY: "SG.aBcDeFgHiJkLmNoPqRsTuV.WxYz1234567890abcdefghijklmnopqrstuvwxyz12345"
+      SLACK_BOT_TOKEN: "xoxb-1234567890-1234567890123-aBcDeFgHiJkLmNoPqRsTuVwX"
+      DD_API_KEY: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        run: |
+          aws configure set aws_access_key_id AKIAIOSFODNN7EXAMPLE
+          aws configure set aws_secret_access_key wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+      - name: Login to Docker Hub
+        run: |
+          echo "dckr_pat_aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890abc" | docker login --username shopist --password-stdin
+
+      - name: Deploy to ECS
+        run: |
+          GITHUB_TOKEN=ghp_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456789
+          ./deploy.sh

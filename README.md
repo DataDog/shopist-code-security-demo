@@ -131,3 +131,88 @@ shopist-code-security-demo/
 - User input inserted unsanitized into HTTP response headers
 - Email header injection via newline characters in SMTP `To` / `Subject` fields
 - `Location` header constructed by concatenating unvalidated user input
+
+## Infrastructure as Code (IaC) Security
+
+The `iac/` directory contains intentionally misconfigured Terraform and Kubernetes files to demonstrate [Datadog IaC Security](https://docs.datadoghq.com/security/code_security/iac_security/) detection.
+
+### Terraform (`iac/terraform/`)
+
+| File               | Misconfigurations                                                                 |
+|--------------------|-----------------------------------------------------------------------------------|
+| `s3.tf`            | Public ACL, no encryption at rest, no access logging, wildcard bucket policy     |
+| `ec2.tf`           | SSH/RDP open to 0.0.0.0/0, IMDSv2 not enforced, unencrypted EBS volumes          |
+| `rds.tf`           | Publicly accessible DB, hardcoded password, no encryption, no backup retention   |
+| `iam.tf`           | Wildcard `*` actions, trust policy allows all principals, admin policy attached   |
+| `networking.tf`    | VPC Flow Logs disabled, NACL allows all inbound, ALB access logs disabled        |
+
+### Kubernetes (`iac/kubernetes/`)
+
+| File                       | Misconfigurations                                                                          |
+|----------------------------|--------------------------------------------------------------------------------------------|
+| `shopist-deployment.yaml`  | Privileged containers, root user, no resource limits, secrets as env vars, hostNetwork/PID |
+| `shopist-rbac.yaml`        | `cluster-admin` binding for app SA, wildcard verbs, secrets readable by frontend           |
+| `shopist-network.yaml`     | No NetworkPolicy, NodePort exposure, admin on LoadBalancer, no TLS on ingress              |
+| `shopist-pod-security.yaml`| Permissive PSP, credentials in ConfigMap, hostPath volume, dangerous Linux capabilities    |
+
+### IaC Misconfiguration Categories
+
+| Category                  | Examples                                                                              |
+|---------------------------|---------------------------------------------------------------------------------------|
+| Network exposure          | SSH/RDP/DB ports open to `0.0.0.0/0`, NodePort on all nodes, admin on public LB      |
+| Encryption                | EBS/RDS unencrypted at rest, no TLS on ingress, plaintext secrets in ConfigMap        |
+| Access control            | IAM wildcard `*` actions, `cluster-admin` for app SA, wildcard RBAC verbs            |
+| Container security        | Privileged mode, `runAsUser: 0`, `allowPrivilegeEscalation`, dangerous capabilities  |
+| Logging & visibility      | VPC Flow Logs off, ALB access logs off, CloudTrail absent                             |
+| Secrets management        | Hardcoded passwords in Terraform, secrets as env vars, credentials in ConfigMap       |
+| Pod isolation             | `hostNetwork: true`, `hostPID: true`, `hostPath: /` volume mount                     |
+
+---
+
+## Software Composition Analysis (SCA)
+
+Each language directory includes a dependency manifest with known vulnerable package versions to demonstrate [Datadog SCA](https://docs.datadoghq.com/security/code_security/software_composition_analysis/) detection:
+
+| Language   | Manifest file       | Notable CVEs                                      |
+|------------|---------------------|---------------------------------------------------|
+| Python     | `requirements.txt`  | Django 2.2.8, PyYAML 5.3.1, Pillow 8.2.0         |
+| JavaScript | `package.json`      | lodash 4.17.15, node-serialize 0.0.4, ejs 3.1.6  |
+| TypeScript | `package.json`      | same as JavaScript                                |
+| Java       | `pom.xml`           | log4j-core 2.14.1 (Log4Shell), Spring4Shell      |
+| Kotlin     | `build.gradle`      | same core vulns as Java                           |
+| .NET       | `shopist.csproj`    | Newtonsoft.Json 12.0.1, ImageSharp 1.0.1         |
+| Ruby       | `Gemfile`           | rails 5.2.3, nokogiri 1.10.4, devise 4.6.2       |
+| Go         | `go.mod`            | jwt-go v3.2.0 (CVE-2020-26160), x/crypto        |
+| PHP        | `composer.json`     | symfony/http-kernel 4.4.0, phpunit 4.8.28        |
+| Swift      | `Package.swift`     | vapor 4.40.0, Alamofire 5.2.0                    |
+
+## Secret Scanning
+
+The `secret_scanning/` directory contains intentionally hardcoded fake secrets across realistic file types to demonstrate [Datadog Secret Scanning](https://docs.datadoghq.com/security/code_security/secret_scanning/) detection:
+
+```
+secret_scanning/
+├── env/
+│   ├── .env                        (Stripe, AWS, SendGrid, Twilio, GitHub PAT, Slack, OpenAI, Datadog...)
+│   └── .env.production             (Azure, GCP, HashiCorp Vault, Shopify, Docker Hub, Anthropic...)
+├── config/
+│   ├── config.yml                  (YAML format secrets)
+│   ├── appsettings.json            (.NET JSON format)
+│   └── application.properties      (Spring Boot format)
+├── scripts/
+│   ├── deploy.sh                   (shell script with AWS, Docker, GitHub, Vault, Slack, DB secrets)
+│   └── seed_data.py                (Python script with Stripe, OpenAI, AWS, HuggingFace, Anthropic)
+├── kubernetes/
+│   └── shopist-secrets.yaml        (K8s Secret manifests with Docker Hub credentials)
+├── ci/
+│   └── .github-actions.yml         (CI/CD pipeline with hardcoded secrets)
+└── keys/
+    ├── shopist_rsa_private.pem     (RSA private key)
+    └── gcp_service_account.json    (GCP service account JSON)
+```
+
+### About Secret Validation
+
+Datadog Secret Scanning includes a [Secret Validation](https://docs.datadoghq.com/security/code_security/secret_scanning/secret_validation/) feature that automatically contacts provider APIs (Stripe, AWS, GitHub, etc.) to confirm whether a detected secret is **active and valid** — not just present in code.
+
+> **Note:** All secrets in this repository are intentionally **fake**. They use realistic formats to trigger detection rules but are not real credentials. As a result, Datadog's Secret Validation feature will show these secrets as **inactive / invalid** rather than active. In a real incident with a leaked credential, Secret Validation would confirm whether the secret can still be used.

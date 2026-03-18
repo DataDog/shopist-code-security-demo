@@ -1,0 +1,90 @@
+# Shopist Kubernetes network configuration
+# WARNING: intentionally misconfigured for Datadog IaC Security demo
+
+# VULN 1: No NetworkPolicy defined for the shopist namespace
+# Without a NetworkPolicy, all pods can communicate with all other pods
+# in the cluster (no network segmentation between services).
+#
+# A secure setup would restrict ingress/egress per service, e.g.:
+#   - shopist-api can only receive traffic from shopist-frontend
+#   - shopist-worker can only reach the database and message queue
+#   - shopist-frontend can only receive traffic from the ingress controller
+
+# VULN 2: Service exposed as NodePort on all node IPs
+# NodePort services bypass cloud load balancer controls and expose
+# the service on every cluster node's external IP.
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopist-api
+  namespace: shopist
+spec:
+  type: NodePort  # VULN 2: NodePort exposes service on all node external IPs
+  selector:
+    app: shopist-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080  # accessible at <any-node-ip>:30080
+
+---
+# VULN 3: Admin dashboard exposed via LoadBalancer (public internet)
+# Internal admin tools should not be publicly accessible.
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopist-admin
+  namespace: shopist
+spec:
+  type: LoadBalancer  # VULN 3: Admin interface exposed with a public cloud load balancer
+  selector:
+    app: shopist-admin
+  ports:
+    - port: 80
+      targetPort: 8081
+
+---
+# VULN 4: Ingress allows all hosts with no TLS configured
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shopist-ingress
+  namespace: shopist
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"  # VULN 4a: TLS redirect disabled
+spec:
+  # No tls block defined — VULN 4b: No TLS certificate, traffic in plaintext
+  rules:
+    - host: shopist.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: shopist-api
+                port:
+                  number: 8080
+    - http:  # VULN 4c: Catch-all rule with no host restriction
+        paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: shopist-admin
+                port:
+                  number: 80
+
+---
+# VULN 5: NetworkPolicy that accidentally allows all ingress (overly permissive podSelector)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: shopist-allow-all-ingress
+  namespace: shopist
+spec:
+  podSelector: {}  # VULN 5: Empty selector matches ALL pods
+  policyTypes:
+    - Ingress
+  ingress:
+    - {}  # VULN 5: Empty ingress rule allows traffic from anywhere
