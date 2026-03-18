@@ -13,4 +13,4 @@ datadog:
   codeLocations:
     - repositoryURL: https://github.com/datadog/shopist-code-security-demo.git
       paths:
-        - "app/**"
+        - "**"
