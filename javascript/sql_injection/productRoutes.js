@@ -8,7 +8,8 @@ const router = express.Router();
 router.get('/search', async (req, res) => {
     const { q } = req.query;
     const [rows] = await pool.query(
-        "SELECT * FROM products WHERE name LIKE '%" + q + "%' OR description LIKE '%" + q + "%'"
+        "SELECT * FROM products WHERE name LIKE ? OR description LIKE ?",
+        [`%${q}%`, `%${q}%`]
     );
     res.json(rows);
 });
@@ -17,7 +18,8 @@ router.get('/search', async (req, res) => {
 router.get('/by-price', async (req, res) => {
     const { min, max } = req.query;
     const [rows] = await pool.query(
-        `SELECT * FROM products WHERE price BETWEEN ${min} AND ${max} ORDER BY price ASC`
+        "SELECT * FROM products WHERE price BETWEEN ? AND ? ORDER BY price ASC",
+        [min, max]
     );
     res.json(rows);
 });
@@ -26,8 +28,8 @@ router.get('/by-price', async (req, res) => {
 router.get('/category/:cat', async (req, res) => {
     const { cat } = req.params;
     const { sort } = req.query;
-    const query = "SELECT * FROM products WHERE category = '" + cat + "' ORDER BY " + sort;
-    const [rows] = await pool.query(query);
+    const query = "SELECT * FROM products WHERE category = ? ORDER BY ?";
+    const [rows] = await pool.query(query, [cat, sort]);
     res.json(rows);
 });
 
