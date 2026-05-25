@@ -16,6 +16,14 @@ class ProductImport {
     @PostMapping("/api/catalog/import-xml")
     fun importProductCatalog(@RequestBody xmlContent: String): Map<String, Any> {
         val factory = DocumentBuilderFactory.newInstance()
+        // Secure XML parser configuration to prevent XXE attacks
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+        factory.isExpandEntityReferences = false
+        factory.isNamespaceAware = true
+        factory.isXIncludeAware = false
         val builder = factory.newDocumentBuilder()
         val doc: Document = builder.parse(InputSource(StringReader(xmlContent)))
         doc.documentElement.normalize()
