@@ -33,9 +33,8 @@ function generateEmailVerificationCode() {
 
 // VULN 3: rand() seeded with user ID for CSRF token — deterministic and forgeable (Weak Cryptography)
 function generateCsrfToken($userId) {
-    // Seeding with a known value makes the token sequence fully predictable
-    srand($userId);
-    $token = rand();
+    // Use cryptographically secure random number generation
+    $token = random_int(0, PHP_INT_MAX);
     return md5($token);
 }
 
