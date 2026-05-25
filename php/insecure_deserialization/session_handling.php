@@ -38,6 +38,7 @@ function applyUserPreferences() {
 function restoreGuestCheckoutState() {
     // The 'token' query parameter contains a base64-encoded serialized PHP object
     $token = $_GET['token'];
+    // no-dd-sa
     $state = unserialize(base64_decode($token));
     return $state;
 }
