@@ -31,8 +31,10 @@ function getProductById($conn) {
 // VULN 3: Double-quoted string with variable interpolation in SQL (SQL Injection)
 function getProductsByCategory($conn, $categorySlug) {
     $pdo = new PDO("mysql:host=localhost;dbname=shopist_db", "shopist_user", "shopist_pass");
-    // Variable interpolated directly into SQL string — PDO provides no benefit here
-    $stmt = $pdo->query("SELECT p.* FROM products p JOIN categories c ON p.category_id = c.id WHERE c.slug = '$categorySlug' ORDER BY p.created_at DESC");
+    // Use prepared statement with parameter binding to prevent SQL injection
+    $stmt = $pdo->prepare("SELECT p.* FROM products p JOIN categories c ON p.category_id = c.id WHERE c.slug = :slug ORDER BY p.created_at DESC");
+    $stmt->bindParam(':slug', $categorySlug, PDO::PARAM_STR);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
