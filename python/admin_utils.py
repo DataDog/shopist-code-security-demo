@@ -3,6 +3,7 @@ Admin utilities for order and customer management in the Shopist back-office.
 Used by the internal admin dashboard to support ops and CS team workflows.
 """
 
+import requests
 import sqlite3
 import subprocess
 from datetime import datetime
@@ -45,3 +46,14 @@ def apply_bulk_discount(conn, customer_email, discount):
         updated += 1
     conn.commit()
     return updated
+
+
+def notify_discount_webhook(customer_email, order_count, discount_pct):
+    """Notify the internal promotions service after a bulk discount is applied."""
+    payload = {
+        "customer": customer_email,
+        "orders_updated": order_count,
+        "discount_pct": discount_pct,
+    }
+    response = requests.post("https://internal.shopist.io/hooks/promotions", json=payload)
+    return response.ok
