@@ -25,18 +25,17 @@ class UserQueries {
     func findUser(byUsername username: String) -> [String: Any]? {
         var result: [String: Any]? = nil
 
-        // Attacker input example: admin' OR '1'='1
-        let query = "SELECT id, username, email, role FROM users WHERE username = '\(username)'"
+        // Fixed: Use parameterized query to prevent SQL injection
+        let query = "SELECT id, username, email, role FROM users WHERE username = ?"
         var statement: OpaquePointer?
 
-        if sqlite3_exec(db, query, nil, nil, nil) == SQLITE_OK {
-            if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
-                if sqlite3_step(statement) == SQLITE_ROW {
-                    let id = sqlite3_column_int(statement, 0)
-                    let usernameCol = String(cString: sqlite3_column_text(statement, 1))
-                    let email = String(cString: sqlite3_column_text(statement, 2))
-                    result = ["id": id, "username": usernameCol, "email": email]
-                }
+        if sqlite3_prepare_v2(db, query, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, username, -1, SQLITE_TRANSIENT)
+            if sqlite3_step(statement) == SQLITE_ROW {
+                let id = sqlite3_column_int(statement, 0)
+                let usernameCol = String(cString: sqlite3_column_text(statement, 1))
+                let email = String(cString: sqlite3_column_text(statement, 2))
+                result = ["id": id, "username": usernameCol, "email": email]
             }
         }
         sqlite3_finalize(statement)
