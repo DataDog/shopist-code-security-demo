@@ -9,6 +9,13 @@ resource "aws_s3_bucket" "remediation_demo_bucket" {
   }
 }
 
+resource "aws_s3_bucket_versioning" "versioning_configuration" {
+  bucket = aws_s3_bucket.remediation_demo_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_acl" "remediation_demo_bucket" {
   bucket = aws_s3_bucket.remediation_demo_bucket.id
   acl    = "private"
