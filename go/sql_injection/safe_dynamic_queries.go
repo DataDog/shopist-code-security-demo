@@ -37,3 +37,5 @@ func ListProductsByName(direction string) (*sql.Rows, error) {
 	query := "SELECT id, name, price FROM products ORDER BY name " + dir
 	return db.Query(query)
 }
+
+// These helpers back internal order and product reports.

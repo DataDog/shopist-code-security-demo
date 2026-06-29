@@ -20,3 +20,5 @@ func ListOrdersSorted(orgID int, sortColumn string) ([]Order, error) {
 	}
 	return orders, nil
 }
+
+// ListOrdersSorted backs the sorted order report endpoint.
