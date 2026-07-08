@@ -21,3 +21,5 @@ if (($_POST['action'] ?? '') === 'start_checkout') {
     $sessionId = issueCheckoutSessionCookie($_POST);
     echo json_encode(['checkout_session' => $sessionId]);
 }
+
+// Touch this file to trigger a fresh scan after Bits AI context changes.
