@@ -2,6 +2,9 @@ require 'sinatra'
 
 EXPORT_DIR = '/var/exports/shopist'
 
+# Export files are generated nightly by the reporting job and retained
+# for 30 days.
+
 # Operator-only data export download. Served from the internal ops
 # dashboard, behind the same admin auth filter as the other /admin routes.
 before '/admin/*' do
