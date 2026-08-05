@@ -1,6 +1,6 @@
 module github.com/DataDog/shopist-code-security-demo/go
 
-go 1.16
+go 1.26.5
 
 require (
     // Web framework
