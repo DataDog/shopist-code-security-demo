@@ -16,7 +16,7 @@ def preview_email_template():
 @app.route("/product/<int:product_id>/description")
 def render_product_description(product_id):
     description = get_product_description(product_id)  # user-supplied content
-    return render_template_string(description)
+    return render_template_string("{{ description }}", description=description)
 
 
 # VULN 3: SSTI in promotional banner - admin user controls template string
