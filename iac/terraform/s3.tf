@@ -14,7 +14,7 @@ resource "aws_s3_bucket" "shopist_product_images" {
 # VULN 2: Public-read ACL exposes all product images to the internet
 resource "aws_s3_bucket_acl" "shopist_product_images_acl" {
   bucket = aws_s3_bucket.shopist_product_images.id
-  acl    = "public-read"
+  acl    = "private"
 }
 
 # VULN 3: No server-side encryption — order receipts stored in plaintext
