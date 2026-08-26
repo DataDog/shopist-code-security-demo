@@ -214,8 +214,8 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | `shopist-rbac.yaml`        | `cluster-admin` binding for app SA, wildcard verbs, secrets readable by frontend           |
 | `shopist-network.yaml`     | No NetworkPolicy, NodePort exposure, admin on LoadBalancer, no TLS on ingress              |
 | `shopist-pod-security.yaml`| Permissive PSP, credentials in ConfigMap, hostPath volume, dangerous Linux capabilities    |
-| `shopist-statefulset.yaml` | No pod `securityContext`/fsGroup, hostPath mount to `/`, unencrypted PVC storage class, `terminationGracePeriodSeconds: 0`, `:latest` image from untrusted registry |
-| `shopist-cronjob.yaml`     | Over-privileged SA binding, secrets as env vars, no `activeDeadlineSeconds`, privileged container, unbounded job history limits |
+| `shopist-statefulset.yaml` | Plaintext password env var, no resource limits, hostPath mount to `/`               |
+| `shopist-cronjob.yaml`     | Privileged container, secrets as env vars, no resource limits                        |
 
 ### IaC Misconfiguration Categories
 
@@ -228,4 +228,3 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | Logging & visibility      | VPC Flow Logs off, ALB access logs off, CloudTrail absent                             |
 | Secrets management        | Hardcoded passwords in Terraform, secrets as env vars, credentials in ConfigMap       |
 | Pod isolation             | `hostNetwork: true`, `hostPID: true`, `hostPath: /` volume mount                     |
-| Resource lifecycle        | `terminationGracePeriodSeconds: 0`, no `activeDeadlineSeconds`, unbounded CronJob history limits |

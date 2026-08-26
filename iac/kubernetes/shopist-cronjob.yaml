@@ -1,5 +1,5 @@
 # Shopist Kubernetes CronJob
-# WARNING: intentionally misconfigured for Datadog IaC Security demo
+# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 apiVersion: batch/v1
 kind: CronJob
@@ -11,26 +11,13 @@ metadata:
 spec:
   schedule: "0 2 * * *"  # nightly order export
 
-  # VULN 1: successfulJobsHistoryLimit / failedJobsHistoryLimit not set — Kubernetes
-  # keeps every completed and failed Job/Pod object forever, growing etcd unbounded
-  # successfulJobsHistoryLimit: 3
-  # failedJobsHistoryLimit: 1
-
   jobTemplate:
     spec:
-      # VULN 2: No activeDeadlineSeconds — a hung export job (e.g. stuck DB query)
-      # will run forever, holding resources and blocking the next scheduled run
-      # activeDeadlineSeconds: 600
-
       template:
         metadata:
           labels:
             app: shopist-order-export
         spec:
-          # VULN 3: serviceAccountName bound to the over-privileged SA from
-          # shopist-rbac.yaml, which carries a cluster-admin binding — a simple
-          # batch export job does not need cluster-wide permissions
-          serviceAccountName: shopist-api-sa
           restartPolicy: OnFailure
 
           containers:
@@ -38,44 +25,20 @@ spec:
               image: shopist/order-export:latest
               imagePullPolicy: Always
 
-              # VULN 4: Container runs privileged — a reporting/export job has no
+              # VULN 1: Container runs privileged — a reporting/export job has no
               # legitimate need for host-level access
               securityContext:
                 privileged: true
                 runAsUser: 0
 
               env:
-                # VULN 5: Secrets mounted as plain environment variables instead of
+                # VULN 2: Secrets mounted as plain environment variables instead of
                 # via `valueFrom.secretKeyRef` / `envFrom.secretRef`
                 - name: DB_PASSWORD
                   value: "Sup3rS3cr3tP@ssw0rd!"
                 - name: S3_EXPORT_BUCKET_SECRET_KEY
                   value: "AKIAABCDEFGHIJKLMNOP/thisIsNotARealSecretButLooksLikeOne"
 
-              # VULN 6: No resource requests/limits — an export job processing a
+              # VULN 3: No resource requests/limits — an export job processing a
               # large order table can consume all node memory and evict other pods
               resources: {}
-
----
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: shopist-cache-warmup
-  namespace: shopist
-  labels:
-    app: shopist-cache-warmup
-spec:
-  schedule: "*/15 * * * *"
-  concurrencyPolicy: Allow  # VULN 7: Allows overlapping runs to pile up if a previous run hangs
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          labels:
-            app: shopist-cache-warmup
-        spec:
-          restartPolicy: OnFailure
-          containers:
-            - name: cache-warmup
-              image: shopist/cache-warmup:latest
-              command: ["/bin/sh", "-c", "curl -sk https://internal-api.shopist.local/warmup"]
