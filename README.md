@@ -205,6 +205,8 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | `rds.tf`           | Publicly accessible DB, hardcoded password, no encryption, no backup retention   |
 | `iam.tf`           | Wildcard `*` actions, trust policy allows all principals, admin policy attached   |
 | `networking.tf`    | VPC Flow Logs disabled, NACL allows all inbound, ALB access logs disabled        |
+| `secretsmanager.tf`| No rotation configured, plaintext secrets in secret versions, wildcard resource policy, no CMK, zero recovery window |
+| `lambda.tf`        | Wildcard execution role, plaintext secrets in env vars, no VPC config, public function URL with no auth, public invoke permission |
 
 ### Kubernetes (`iac/kubernetes/`)
 
@@ -224,5 +226,6 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | Access control            | IAM wildcard `*` actions, `cluster-admin` for app SA, wildcard RBAC verbs            |
 | Container security        | Privileged mode, `runAsUser: 0`, `allowPrivilegeEscalation`, dangerous capabilities  |
 | Logging & visibility      | VPC Flow Logs off, ALB access logs off, CloudTrail absent                             |
-| Secrets management        | Hardcoded passwords in Terraform, secrets as env vars, credentials in ConfigMap       |
+| Secrets management        | Hardcoded passwords in Terraform, secrets as env vars, credentials in ConfigMap, no rotation, wildcard secret resource policy |
 | Pod isolation             | `hostNetwork: true`, `hostPID: true`, `hostPath: /` volume mount                     |
+| Serverless exposure       | Public Lambda Function URL with no auth, wildcard invoke permission, no VPC config    |
