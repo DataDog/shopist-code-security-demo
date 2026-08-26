@@ -1,9 +1,9 @@
 # Shopist RDS databases
-# WARNING: intentionally misconfigured for Datadog IaC Security demo
+# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
-  Shopist RDS databases (intentionally misconfigured for Datadog IaC Security demo)
+  Shopist RDS databases
 
 Resources:
   ShopistOrdersDb:
@@ -16,46 +16,9 @@ Resources:
       AllocatedStorage: "50"
       DBName: shopist_orders
       MasterUsername: shopist_admin
-      MasterUserPassword: "Sh0pist@dmin123"  # VULN 2: Hardcoded password in plain text
-      PubliclyAccessible: true               # VULN 1: Database accessible from the internet
-      Tags:
-        - Key: Project
-          Value: shopist
-        - Key: Environment
-          Value: production
-
-  ShopistCustomersDb:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      DBInstanceIdentifier: shopist-customers-db-prod
-      Engine: mysql
-      EngineVersion: "8.0"
-      DBInstanceClass: db.t3.medium
-      AllocatedStorage: "100"
-      DBName: shopist_customers
-      MasterUsername: shopist_admin
-      MasterUserPassword: "Sup3rS3cr3t!"
-      StorageEncrypted: false  # VULN 3: No encryption for customer PII database
-      BackupRetentionPeriod: 0 # VULN 4: No backup retention — data loss risk
-      DeletionProtection: false # VULN 5: No deletion protection — database can be deleted accidentally
-      Tags:
-        - Key: Project
-          Value: shopist
-        - Key: Environment
-          Value: production
-
-  ShopistPaymentsDb:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      DBInstanceIdentifier: shopist-payments-db-prod
-      Engine: postgres
-      EngineVersion: "14.3"
-      DBInstanceClass: db.t3.large
-      AllocatedStorage: "200"
-      DBName: shopist_payments
-      MasterUsername: shopist_payments_admin
-      MasterUserPassword: "P@yments2024!"
-      MultiAZ: false  # VULN 6: No high availability for payments database
+      MasterUserPassword: "Sh0pist@dmin123"  # VULN 1: Hardcoded password in plain text
+      PubliclyAccessible: true               # VULN 2: Database accessible from the internet
+      StorageEncrypted: false                # VULN 3: No encryption for order data
       Tags:
         - Key: Project
           Value: shopist

@@ -1,9 +1,9 @@
 # Shopist EC2 instances and security groups
-# WARNING: intentionally misconfigured for Datadog IaC Security demo
+# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
-  Shopist EC2 instances and security groups (intentionally misconfigured for Datadog IaC Security demo)
+  Shopist EC2 instances and security groups
 
 Resources:
   ShopistVpc:
@@ -25,7 +25,6 @@ Resources:
       GroupDescription: Security group for Shopist application servers
       VpcId: !Ref ShopistVpc
       SecurityGroupIngress:
-        # VULN 1: Security group allows SSH (port 22) from any IP address
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
@@ -43,27 +42,6 @@ Resources:
         - Key: Environment
           Value: production
 
-  ShopistAdminSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: shopist-admin-sg
-      GroupDescription: Security group for Shopist admin bastion
-      VpcId: !Ref ShopistVpc
-      SecurityGroupIngress:
-        # VULN 2: Security group allows RDP (port 3389) from any IP address
-        - IpProtocol: tcp
-          FromPort: 3389
-          ToPort: 3389
-          CidrIp: 0.0.0.0/0  # VULN 2: RDP open to the entire internet
-      SecurityGroupEgress:
-        - IpProtocol: "-1"
-          CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Project
-          Value: shopist
-        - Key: Environment
-          Value: production
-
   ShopistApiServer:
     Type: AWS::EC2::Instance
     Properties:
@@ -71,16 +49,15 @@ Resources:
       InstanceType: t3.medium
       SecurityGroupIds:
         - !Ref ShopistAppSecurityGroup
-      # VULN 3: EC2 instance does not enforce IMDSv2 — vulnerable to SSRF-based metadata theft
       MetadataOptions:
         HttpEndpoint: enabled
-        HttpTokens: optional  # VULN 3: IMDSv2 not required (should be "required")
-        HttpPutResponseHopLimit: 2  # hop limit > 1 allows container escape to metadata
+        HttpTokens: optional  # VULN 2: IMDSv2 not required (should be "required")
+        HttpPutResponseHopLimit: 2
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
             VolumeSize: 20
-            Encrypted: false  # VULN 4: Root volume not encrypted
+            Encrypted: false  # VULN 3: Root volume not encrypted
             DeleteOnTermination: true
       Tags:
         - Key: Name
@@ -89,16 +66,3 @@ Resources:
           Value: shopist
         - Key: Environment
           Value: production
-
-  # VULN 5: EBS volume not encrypted — contains customer order data
-  ShopistDataVolume:
-    Type: AWS::EC2::Volume
-    Properties:
-      AvailabilityZone: us-east-1a
-      Size: 100
-      Encrypted: false  # VULN 5: Unencrypted EBS volume with sensitive data
-      Tags:
-        - Key: Name
-          Value: shopist-data-volume
-        - Key: Project
-          Value: shopist

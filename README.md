@@ -210,9 +210,9 @@ The `iac/` directory contains intentionally misconfigured Terraform, CloudFormat
 
 | File               | Misconfigurations                                                                 |
 |--------------------|-------------------------------------------------------------------------------------|
-| `s3.yaml`          | Public-read ACL, no encryption at rest, versioning disabled, no access logging, wildcard bucket policy, public access block disabled |
-| `ec2.yaml`         | SSH/RDP open to 0.0.0.0/0, IMDSv2 not enforced, unencrypted EBS volumes          |
-| `rds.yaml`         | Publicly accessible DB, hardcoded password, no encryption, no backup retention   |
+| `s3.yaml`          | Public-read ACL, no encryption at rest, wildcard bucket policy                  |
+| `ec2.yaml`         | SSH open to 0.0.0.0/0, IMDSv2 not enforced, unencrypted EBS volume               |
+| `rds.yaml`         | Publicly accessible DB, hardcoded password, no encryption                        |
 
 ### Kubernetes (`iac/kubernetes/`)
 
