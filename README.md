@@ -205,8 +205,8 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | `rds.tf`           | Publicly accessible DB, hardcoded password, no encryption, no backup retention   |
 | `iam.tf`           | Wildcard `*` actions, trust policy allows all principals, admin policy attached   |
 | `networking.tf`    | VPC Flow Logs disabled, NACL allows all inbound, ALB access logs disabled        |
-| `secretsmanager.tf`| No rotation configured, plaintext secrets in secret versions, wildcard resource policy, no CMK, zero recovery window |
-| `lambda.tf`        | Wildcard execution role, plaintext secrets in env vars, no VPC config, public function URL with no auth, public invoke permission |
+| `secretsmanager.tf`| Wildcard resource policy, plaintext secrets in secret versions |
+| `lambda.tf`        | Wildcard execution role, plaintext secrets in env vars, public function URL with no auth |
 
 ### Kubernetes (`iac/kubernetes/`)
 
