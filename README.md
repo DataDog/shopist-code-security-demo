@@ -194,7 +194,7 @@ Datadog Secret Scanning includes a [Secret Validation](https://docs.datadoghq.co
 
 ## Infrastructure as Code (IaC) Security
 
-The `iac/` directory contains intentionally misconfigured Terraform and Kubernetes files to demonstrate [Datadog IaC Security](https://docs.datadoghq.com/security/code_security/iac_security/) detection.
+The `iac/` directory contains intentionally misconfigured Terraform, CloudFormation, and Kubernetes files to demonstrate [Datadog IaC Security](https://docs.datadoghq.com/security/code_security/iac_security/) detection.
 
 ### Terraform (`iac/terraform/`)
 
@@ -205,6 +205,14 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | `rds.tf`           | Publicly accessible DB, hardcoded password, no encryption, no backup retention   |
 | `iam.tf`           | Wildcard `*` actions, trust policy allows all principals, admin policy attached   |
 | `networking.tf`    | VPC Flow Logs disabled, NACL allows all inbound, ALB access logs disabled        |
+
+### CloudFormation (`iac/cloudformation/`)
+
+| File               | Misconfigurations                                                                 |
+|--------------------|-------------------------------------------------------------------------------------|
+| `s3.yaml`          | Public-read ACL, no encryption at rest, versioning disabled, no access logging, wildcard bucket policy, public access block disabled |
+| `ec2.yaml`         | SSH/RDP open to 0.0.0.0/0, IMDSv2 not enforced, unencrypted EBS volumes          |
+| `rds.yaml`         | Publicly accessible DB, hardcoded password, no encryption, no backup retention   |
 
 ### Kubernetes (`iac/kubernetes/`)
 

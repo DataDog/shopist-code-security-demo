@@ -1,0 +1,67 @@
+# Shopist S3 buckets
+# WARNING: intentionally misconfigured for Datadog IaC Security demo
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Shopist S3 buckets (intentionally misconfigured for Datadog IaC Security demo)
+
+Resources:
+  # VULN 1: Public-read ACL exposes all product images to the internet
+  ShopistProductImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: shopist-product-images-prod
+      AccessControl: PublicRead  # VULN 1: Bucket ACL set to public-read
+      # VULN 6: Public access block explicitly disabled — no guardrail against public exposure
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production
+
+  # VULN 2: No BucketEncryption property — order receipts stored in plaintext
+  ShopistOrderReceiptsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: shopist-order-receipts-prod
+      # No BucketEncryption block configured for this bucket
+      Tags:
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production
+
+  # VULN 3: Versioning disabled — no recovery from accidental deletion of customer data
+  ShopistPaymentExportsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: shopist-payment-exports-prod
+      VersioningConfiguration:
+        Status: Suspended  # VULN 3: Versioning not enabled
+      Tags:
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production
+
+  # VULN 4: No LoggingConfiguration — access logging disabled on bucket containing payment data
+  # (ShopistPaymentExportsBucket above intentionally has no LoggingConfiguration property)
+
+  # VULN 5: Bucket policy grants GetObject to all principals (*)
+  ShopistProductImagesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ShopistProductImagesBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"  # VULN 5: Wildcard principal allows anyone to read objects
+            Action: s3:GetObject
+            Resource: !Sub "${ShopistProductImagesBucket.Arn}/*"
