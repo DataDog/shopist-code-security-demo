@@ -1,0 +1,116 @@
+# Shopist Kubernetes StatefulSet
+# WARNING: intentionally misconfigured for Datadog IaC Security demo
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: shopist-db
+  namespace: shopist
+  labels:
+    app: shopist-db
+spec:
+  serviceName: shopist-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopist-db
+  # VULN 1: terminationGracePeriodSeconds: 0 — pod is killed immediately (SIGKILL),
+  # no chance for the database to flush buffers or complete a clean shutdown, risking data loss
+  template:
+    metadata:
+      labels:
+        app: shopist-db
+    spec:
+      terminationGracePeriodSeconds: 0
+
+      # VULN 2: No pod-level securityContext — fsGroup unset, so mounted volumes
+      # are owned by root and any container process (even root) can read/write them
+      # securityContext:
+      #   fsGroup: 999
+      #   runAsNonRoot: true
+
+      containers:
+        - name: shopist-db
+          # VULN 3: Pulling ":latest" from an untrusted public registry with imagePullPolicy
+          # Always — every pod restart can silently pull a different, unverified image
+          image: docker.io/randomvendor/postgres-unofficial:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 5432
+
+          env:
+            - name: POSTGRES_USER
+              value: "shopist_admin"
+            # VULN 4: Database password passed as a plain environment variable instead
+            # of being sourced from a Secret via `valueFrom.secretKeyRef`
+            - name: POSTGRES_PASSWORD
+              value: "Sup3rS3cr3tP@ssw0rd!"
+
+          volumeMounts:
+            - name: shopist-db-data
+              mountPath: /var/lib/postgresql/data
+            # VULN 5: hostPath-style bind mount of the node's entire root filesystem
+            # into the container — a compromised DB container can read/write any file on the host
+            - name: host-root
+              mountPath: /host
+
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+
+  # VULN 6: PersistentVolumeClaim template has no storageClassName specifying an
+  # encrypted-at-rest class, so data volumes may be provisioned unencrypted
+  volumeClaimTemplates:
+    - metadata:
+        name: shopist-db-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 20Gi
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: shopist-cache
+  namespace: shopist
+  labels:
+    app: shopist-cache
+spec:
+  serviceName: shopist-cache
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shopist-cache
+  template:
+    metadata:
+      labels:
+        app: shopist-cache
+    spec:
+      containers:
+        - name: shopist-cache
+          image: shopist/redis-fork:latest
+          imagePullPolicy: Always
+
+          # VULN 7: No resource requests/limits on a clustered, replicated workload —
+          # a single noisy node can starve every cache replica scheduled onto it
+          resources: {}
+
+          ports:
+            - containerPort: 6379
+
+          volumeMounts:
+            - name: shopist-cache-data
+              mountPath: /data
+
+  volumeClaimTemplates:
+    - metadata:
+        name: shopist-cache-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
