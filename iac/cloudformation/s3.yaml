@@ -1,0 +1,36 @@
+# Shopist S3 buckets
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Shopist S3 buckets
+
+Resources:
+  ShopistProductImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: shopist-product-images-prod
+      AccessControl: PublicRead  # VULN 1: Bucket ACL set to public-read
+      # No BucketEncryption block configured — VULN 2: order data stored in plaintext
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production
+
+  ShopistProductImagesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ShopistProductImagesBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"  # VULN 3: Wildcard principal allows anyone to read objects
+            Action: s3:GetObject
+            Resource: !Sub "${ShopistProductImagesBucket.Arn}/*"
