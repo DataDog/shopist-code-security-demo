@@ -1,5 +1,4 @@
 # Shopist Kubernetes CronJob
-# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 apiVersion: batch/v1
 kind: CronJob

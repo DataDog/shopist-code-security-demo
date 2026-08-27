@@ -1,5 +1,4 @@
 # Shopist Kubernetes StatefulSet
-# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 apiVersion: apps/v1
 kind: StatefulSet
