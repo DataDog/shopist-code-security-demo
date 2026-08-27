@@ -1,5 +1,4 @@
 # Shopist RDS databases
-# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >

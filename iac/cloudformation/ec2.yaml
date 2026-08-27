@@ -1,5 +1,4 @@
 # Shopist EC2 instances and security groups
-# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
