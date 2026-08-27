@@ -1,5 +1,4 @@
 # Shopist Lambda functions
-# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 resource "aws_iam_role" "shopist_checkout_lambda_role" {
   name = "shopist-checkout-lambda-role"

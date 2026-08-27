@@ -1,5 +1,4 @@
 # Shopist Secrets Manager
-# Datadog IaC Security demo fixture — contains intentional misconfigurations, see VULN comments below.
 
 # VULN 1: Resource policy allows any principal in any account to read the secret
 resource "aws_secretsmanager_secret" "shopist_payment_api_keys" {
