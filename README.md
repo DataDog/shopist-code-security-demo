@@ -214,6 +214,8 @@ The `iac/` directory contains intentionally misconfigured Terraform and Kubernet
 | `shopist-rbac.yaml`        | `cluster-admin` binding for app SA, wildcard verbs, secrets readable by frontend           |
 | `shopist-network.yaml`     | No NetworkPolicy, NodePort exposure, admin on LoadBalancer, no TLS on ingress              |
 | `shopist-pod-security.yaml`| Permissive PSP, credentials in ConfigMap, hostPath volume, dangerous Linux capabilities    |
+| `shopist-statefulset.yaml` | Plaintext password env var, no resource limits, hostPath mount to `/`               |
+| `shopist-cronjob.yaml`     | Privileged container, secrets as env vars, no resource limits                        |
 
 ### IaC Misconfiguration Categories
 

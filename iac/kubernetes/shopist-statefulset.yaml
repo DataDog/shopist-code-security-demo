@@ -1,0 +1,60 @@
+# Shopist Kubernetes StatefulSet
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: shopist-db
+  namespace: shopist
+  labels:
+    app: shopist-db
+spec:
+  serviceName: shopist-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopist-db
+  template:
+    metadata:
+      labels:
+        app: shopist-db
+    spec:
+      containers:
+        - name: shopist-db
+          image: docker.io/randomvendor/postgres-unofficial:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 5432
+
+          env:
+            - name: POSTGRES_USER
+              value: "shopist_admin"
+            # VULN 1: Database password passed as a plain environment variable instead
+            # of being sourced from a Secret via `valueFrom.secretKeyRef`
+            - name: POSTGRES_PASSWORD
+              value: "Sup3rS3cr3tP@ssw0rd!"
+
+          # VULN 2: No resource requests/limits — an unbounded workload can starve the node
+          resources: {}
+
+          volumeMounts:
+            - name: shopist-db-data
+              mountPath: /var/lib/postgresql/data
+            # VULN 3: hostPath-style bind mount of the node's entire root filesystem
+            # into the container — a compromised DB container can read/write any file on the host
+            - name: host-root
+              mountPath: /host
+
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+
+  volumeClaimTemplates:
+    - metadata:
+        name: shopist-db-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 20Gi

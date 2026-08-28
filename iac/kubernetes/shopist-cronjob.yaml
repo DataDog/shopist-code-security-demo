@@ -1,0 +1,43 @@
+# Shopist Kubernetes CronJob
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: shopist-order-export
+  namespace: shopist
+  labels:
+    app: shopist-order-export
+spec:
+  schedule: "0 2 * * *"  # nightly order export
+
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: shopist-order-export
+        spec:
+          restartPolicy: OnFailure
+
+          containers:
+            - name: order-export
+              image: shopist/order-export:latest
+              imagePullPolicy: Always
+
+              # VULN 1: Container runs privileged — a reporting/export job has no
+              # legitimate need for host-level access
+              securityContext:
+                privileged: true
+                runAsUser: 0
+
+              env:
+                # VULN 2: Secrets mounted as plain environment variables instead of
+                # via `valueFrom.secretKeyRef` / `envFrom.secretRef`
+                - name: DB_PASSWORD
+                  value: "Sup3rS3cr3tP@ssw0rd!"
+                - name: S3_EXPORT_BUCKET_SECRET_KEY
+                  value: "AKIAABCDEFGHIJKLMNOP/thisIsNotARealSecretButLooksLikeOne"
+
+              # VULN 3: No resource requests/limits — an export job processing a
+              # large order table can consume all node memory and evict other pods
+              resources: {}
