@@ -1,0 +1,25 @@
+# Shopist RDS databases
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Shopist RDS databases
+
+Resources:
+  ShopistOrdersDb:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: shopist-orders-db-prod
+      Engine: postgres
+      EngineVersion: "13.7"
+      DBInstanceClass: db.t3.medium
+      AllocatedStorage: "50"
+      DBName: shopist_orders
+      MasterUsername: shopist_admin
+      MasterUserPassword: "Sh0pist@dmin123"  # VULN 1: Hardcoded password in plain text
+      PubliclyAccessible: true               # VULN 2: Database accessible from the internet
+      StorageEncrypted: false                # VULN 3: No encryption for order data
+      Tags:
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production

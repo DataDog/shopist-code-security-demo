@@ -1,0 +1,67 @@
+# Shopist EC2 instances and security groups
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Shopist EC2 instances and security groups
+
+Resources:
+  ShopistVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: shopist-vpc
+        - Key: Project
+          Value: shopist
+
+  ShopistAppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: shopist-app-sg
+      GroupDescription: Security group for Shopist application servers
+      VpcId: !Ref ShopistVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # VULN 1: SSH open to the entire internet
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production
+
+  ShopistApiServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0c02fb55956c7d316
+      InstanceType: t3.medium
+      SecurityGroupIds:
+        - !Ref ShopistAppSecurityGroup
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: optional  # VULN 2: IMDSv2 not required (should be "required")
+        HttpPutResponseHopLimit: 2
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 20
+            Encrypted: false  # VULN 3: Root volume not encrypted
+            DeleteOnTermination: true
+      Tags:
+        - Key: Name
+          Value: shopist-api-server
+        - Key: Project
+          Value: shopist
+        - Key: Environment
+          Value: production
