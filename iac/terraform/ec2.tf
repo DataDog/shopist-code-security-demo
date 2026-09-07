@@ -44,7 +44,7 @@ resource "aws_security_group" "shopist_admin_sg" {
     from_port   = 3389
     to_port     = 3389
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # VULN 2: RDP open to the entire internet
+    cidr_blocks = [aws_vpc.shopist_vpc.cidr_block]
   }
 
   egress {
