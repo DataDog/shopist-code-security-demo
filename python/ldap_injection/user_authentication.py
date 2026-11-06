@@ -13,7 +13,7 @@ def authenticate_user_ldap(username, password):
 def get_employees_by_department(department):
     conn = ldap.initialize("ldap://internal-ldap.shopist.com")
     conn.simple_bind_s("cn=admin,dc=shopist,dc=com", "admin_pass")
-    search_filter = f"(&(objectClass=person)(department={department}))"
+    search_filter = f"(&(objectClass=person)(department={ldap.filter.escape_filter_chars(department)}))"
     return conn.search_s("dc=shopist,dc=com", ldap.SCOPE_SUBTREE, search_filter)
 
 
